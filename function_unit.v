@@ -25,7 +25,7 @@ module function_unit(FS, OpA, OpB, result, V, C, N, Z);
 
   wire carry, overflow;
 
-  assign block012_or_arith = FS[3];
+  assign blocks_or_arith = FS[3];
   assign opselect = FS[2:0];
 
   arith_circuit A_C (arith_out, carry, overflow, OpA, OpB, opselect);
@@ -39,7 +39,7 @@ module function_unit(FS, OpA, OpB, result, V, C, N, Z);
 
   assign V = (~blocks_or_arith) & overflow;
   assign C = (~blocks_or_arith) & carry;
-  assign Z = ~(result[15] |result[14]|result[13]|result[12]|result[11]|result[10]|result[9]|result[8]|result[7]|result[6]result[5]result[4]|result[3]|result[2]|result[1]|result[0]);
+  assign Z = ~(result[15] |result[14]|result[13]|result[12]|result[11]|result[10]|result[9]|result[8]|result[7]|result[6]|result[5]|result[4]|result[3]|result[2]|result[1]|result[0]);
   assign N = result[15];
 
 endmodule
@@ -74,7 +74,7 @@ endmodule
 
 
 // Module: chained_adder (16-bit ripple carry)
-module chained_adder(sum, cflag, vflag, a, b, cin);
+module chained_adder(sum, carry, overflow, a, b, cin);
 	input cin;
 	input [15:0] a, b;
 
@@ -124,10 +124,10 @@ module block0 (result, OpA, OpB, opselect);
 	output [15:0] result;
 
 	wire remnotzero, remupper, upperout;
-	wire block0;
+	wire using_block0;
 	wire out_block0;
 
-	assign block0 = (~opselect[2]) & (opselect[1] | opselect[0]);
+	assign using_block0 = (~opselect[2]) & (opselect[1] | opselect[0]);
 
 	// remainder is nonzero when any of B[3:0] is 1
 	assign remnotzero = OpB[3] | OpB[2] | OpB[1] | OpB[0];
@@ -138,10 +138,10 @@ module block0 (result, OpA, OpB, opselect);
 
 	assign out_block0= upperout & using_block0;
 
-	assign result[0] = OpB[0] & block0;
-	assign result[1] = OpB[1] & block0;
-	assign result[2] = OpB[2] & block0;
-	assign result[3] = OpB[3] & opselect[0] &block0;
+	assign result[0] = OpB[0] & using_block0;
+	assign result[1] = OpB[1] & using_block0;
+	assign result[2] = OpB[2] & using_block0;
+	assign result[3] = OpB[3] & opselect[0] &using_block0;
 	assign result[15:4] = {12{out_block0}};
 endmodule
 
@@ -159,7 +159,7 @@ module block1 (result, OpA, OpB, opselect);
 	assign and_bool  = ~(opselect[0] | ~opselect[2]);
 	assign block1 = ~opselect[1] & (~opselect[0]|opselect[2]);
 
-	wire [15:0] nored, nanded, anded, nanded_original;
+	wire [15:0] nor_, nand_, and_, nand_original;
 
 	assign nor_ = ~(~(OpA|OpB) & {16{nor_bool}});
 	assign nand_original = ~(OpA & OpB);
@@ -175,7 +175,7 @@ module block2 (result, OpA, OpB, opselect);
 	input [15:0] OpA, OpB;
 	output [15:0] result;
 
-	wire [15:0] opA_select, opB_select;
+	wire [15:0] opA_selected, opB_selected;
 	wire s, block2;
 
 	assign s = opselect[0];
@@ -184,6 +184,6 @@ module block2 (result, OpA, OpB, opselect);
 	assign opA_selected = {16{s}}  & OpA;
 	assign opB_selected = {16{~s}} & OpB;
 
-	assign result = ~(opA_select|opB_select) & {16{block2}};
+	assign result = ~(opA_selected|opB_selected) & {16{block2}};
 endmodule
 

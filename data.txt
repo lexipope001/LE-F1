@@ -9,10 +9,10 @@
 //  "@<number>" specifies the memory location of the next line of data 
 //  and then the next lines are in consecutive locations.
 @0
-2544
-1111
-2222
-3333
+7B5E
+9A27
+5D5D
+E490
 4444
 0000
 0000
